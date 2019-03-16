@@ -59,6 +59,8 @@ int main(int argc, char** argv) {
     // output::debug("GROUP: " + group);
     for(auto modem : modems) {
       if(!group.empty()) {
+	cout << "Modem's IMEI| " << modem.get_imei() << endl;
+	cout << "Modem's Group| " << modem.get_group() << endl;
         if(modem.get_group() == group) {
           sms::output::debug("Group found!");
           SMS sms(modem.get_index(), number, message);
@@ -66,6 +68,7 @@ int main(int argc, char** argv) {
           if(sms.prepared()) {
             sms.send();
             sms.save();
+	    sms.remove();
             sms::output::debug("SMS sent!");
           } else {
             sms::output::warning("SMS not set");
