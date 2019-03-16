@@ -1,0 +1,6 @@
+[submodule "libs/mmcl1_m0d3m"]
+	path = libs/mmcl1_m0d3m
+	url = git@github.com:Afkanerd/mmcl1_m0d3m.git
+[submodule "libs/mmcl1_5m5"]
+	path = libs/mmcl1_5m5
+	url = git@github.com:Afkanerd/mmcl1_5m5.git
