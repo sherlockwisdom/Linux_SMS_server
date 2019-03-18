@@ -19,7 +19,8 @@ map<string, string>
 Modem::configurations = Modem::config_file("/usr/local/etc/afkanerd_openos/confs/modem.conf");
 
 int main(int argc, char** argv) {
-  string type, number, message, _class = "1", group = "MTN";
+  string type, number, message, _class = "1", group;
+  bool debug;
 
   if(argc > 1) {
     for(int i=1;i<argc;++i) {
@@ -43,6 +44,10 @@ int main(int argc, char** argv) {
         group = argv[i+1];
         ++i;
       }
+      else if((string)(argv[i]) == "--debug") {
+        debug = true;
+        ++i;
+      }
     }
   }
   else {
@@ -54,24 +59,30 @@ int main(int argc, char** argv) {
     Modem modemObject;
     modemObject.debug = true;
     auto modems = modemObject.list();
+    if(!message.empty()) cout << "Message: " << message << endl;
+    if(!group.empty()) cout << "Group: " << group << endl;
     // sms::output::debug("Found - " + toString((modems.size())) + " modem(s)");
-    cout << "Found " << modems.size() << " modem(s)" << endl;
+    // cout << "Found " << modems.size() << " modem(s)" << endl;
     // output::debug("GROUP: " + group);
     for(auto modem : modems) {
       if(!group.empty()) {
-      	cout << "Modem's IMEI| " << modem.get_imei() << endl;
-      	cout << "Modem's Group| " << modem.get_group() << endl;
+        //Put global output function
+      	// if(debug) {
+        //   cout << "Modem's IMEI| " << modem.get_imei() << endl;
+      	//   cout << "Modem's Group| " << modem.get_group() << endl;
+        // }
         if(modem.get_group() == group) {
-          sms::output::debug("Group found!");
+          cout << "FOUND MODEM FOR GROUP!";
           SMS sms(modem.get_index(), number, message);
           sms.set_class(_class);
           if(sms.prepared()) {
+            cout << number << " | " << message << " | ";
             sms.send();
             sms.save();
             sms.remove();
             sms::output::debug("SMS sent!");
           } else {
-            sms::output::warning("SMS not set");
+            sms::output::warning("SMS not prepared");
           }
           break;
         }
@@ -85,7 +96,7 @@ int main(int argc, char** argv) {
           // sms.save();
           sms::output::debug("SMS sent!");
         } else {
-          sms::output::warning("SMS not set");
+          sms::output::warning("SMS not prepared");
         }
         break;
       }
