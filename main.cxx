@@ -17,7 +17,30 @@ SMS::configurations = SMS::config_file("/usr/local/etc/afkanerd_openos/confs/sms
 
 map<string, string>
 Modem::configurations = Modem::config_file("/usr/local/etc/afkanerd_openos/confs/modem.conf");
+string unescape(const string& s)
+{
+  string res;
+  string::const_iterator it = s.begin();
+  while (it != s.end())
+  {
+    char c = *it++;
+    if (c == '\\' && it != s.end())
+    {
+      switch (*it++) {
+      case '\\': c = '\\'; break;
+      case 'n': c = '\n'; break;
+      case 't': c = '\t'; break;
+      // all other escapes
+      default: 
+        // invalid escape sequence - skip it. alternatively you can copy it as is, throw an exception...
+        continue;
+      }
+    }
+    res += c;
+  }
 
+  return res;
+}
 int main(int argc, char** argv) {
   string type, number, message, _class = "1", group;
   bool debug;
@@ -33,6 +56,7 @@ int main(int argc, char** argv) {
       }
       else if((string)(argv[i]) == "--message") {
         message = argv[i+1];
+	message = unescape(message);
         ++i;
         // sms::output::debug("Message: " + message);
       }
@@ -59,18 +83,9 @@ int main(int argc, char** argv) {
     Modem modemObject;
     modemObject.debug = true;
     auto modems = modemObject.list();
-    if(!message.empty()) cout << "Message: " << message << endl;
-    if(!group.empty()) cout << "Group: " << group << endl;
-    // sms::output::debug("Found - " + toString((modems.size())) + " modem(s)");
-    // cout << "Found " << modems.size() << " modem(s)" << endl;
-    // output::debug("GROUP: " + group);
     for(auto modem : modems) {
       if(!group.empty()) {
-        //Put global output function
-      	// if(debug) {
-        //   cout << "Modem's IMEI| " << modem.get_imei() << endl;
-      	//   cout << "Modem's Group| " << modem.get_group() << endl;
-        // }
+	      cout << "[MODEM GROUP: " << modem.get_group() << " - " << group << " ]" << endl;
         if(modem.get_group() == group) {
           cout << "FOUND MODEM FOR GROUP!";
           SMS sms(modem.get_index(), number, message);
@@ -80,7 +95,7 @@ int main(int argc, char** argv) {
             sms.send();
             sms.save();
             sms.remove();
-            sms::output::debug("SMS sent!");
+            //sms::output::debug("SMS sent!");
           } else {
             sms::output::warning("SMS not prepared");
           }
@@ -89,6 +104,7 @@ int main(int argc, char** argv) {
       }
       else {
         sms::output::warning("Group not found!");
+	cout<<"[GROUP: " << group << "]"<<endl;
         SMS sms(modem.get_index(), number, message);
         sms.set_class(_class);
         if(sms.prepared()) {
