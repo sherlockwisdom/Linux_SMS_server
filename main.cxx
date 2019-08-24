@@ -17,6 +17,12 @@ SMS::configurations = SMS::config_file("/usr/local/etc/afkanerd_openos/confs/sms
 
 map<string, string>
 Modem::configurations = Modem::config_file("/usr/local/etc/afkanerd_openos/confs/modem.conf");
+
+void utf_8_converter(string& input) {
+	//string* p_input = input;
+	/**p_input ++ = 0xC0 | (c >> 6);
+	*p_input ++ = 0x80 | (c & 0x3F);*/
+}
 string unescape(const string& s)
 {
   string res;
@@ -30,6 +36,8 @@ string unescape(const string& s)
       case '\\': c = '\\'; break;
       case 'n': c = '\n'; break;
       case 't': c = '\t'; break;
+      //case '[': c = '('; break;
+      //case ']': c = ')'; break;
       // all other escapes
       default: 
         // invalid escape sequence - skip it. alternatively you can copy it as is, throw an exception...
@@ -57,6 +65,7 @@ int main(int argc, char** argv) {
       else if((string)(argv[i]) == "--message") {
         message = argv[i+1];
 	message = unescape(message);
+	//utf_8_converter(message);
         ++i;
         // sms::output::debug("Message: " + message);
       }
